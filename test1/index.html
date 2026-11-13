@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>국가공무원인재개발원 (NHI) 안내 포털</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <!-- Leaflet Map CSS/JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            // New Forest Green & Warm Amber & Deep Teal palette
+            forest: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              500: '#15803d',
+              600: '#166534',
+              700: '#14532d',
+              800: '#0f3e22',
+              900: '#072714',
+            },
+            tealGov: {
+              500: '#0d9488',
+              600: '#0f766e',
+              700: '#115e59',
+            },
+            warmGold: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .hero-pattern {
+      background-color: #072714;
+      background-image: radial-gradient(rgba(22, 101, 52, 0.4) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      border-radius: 1rem;
+    }
+    .illustration-card {
+      transition: all 0.3s ease;
+    }
+    .illustration-card:hover {
+      transform: translateY(-4px);
+    }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased selection:bg-emerald-700 selection:text-white">
+
+  <!-- Top Announcement Bar -->
+  <div class="bg-forest-900 text-emerald-100 text-xs py-2.5 px-4 border-b border-forest-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <span class="bg-warmGold-500 text-forest-900 font-bold px-2 py-0.5 rounded text-[11px]">안내</span>
+        <span class="font-medium">2026년도 국가공무원 신임관리자과정 및 직급별 역량강화 교육 운영</span>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <a href="https://e-learning.nhi.go.kr" target="_blank" class="hover:text-amber-300 flex items-center gap-1 transition">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> 나라배움터 온라인학습
+        </a>
+        <span class="text-forest-700">|</span>
+        <button onclick="scrollToSection('contact-quick')" class="hover:text-amber-300 transition">캠퍼스 종합상황실</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <div class="w-11 h-11 bg-gradient-to-tr from-forest-700 to-tealGov-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-forest-800/20">
+          <i data-lucide="award" class="w-6 h-6 text-warmGold-400"></i>
+        </div>
+        <div>
+          <div class="text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
+            국가공무원인재개발원
+            <span class="text-[11px] font-bold text-forest-700 bg-forest-50 px-2 py-0.5 rounded-full border border-forest-200">NHI</span>
+          </div>
+          <p class="text-xs text-stone-500 font-medium">National Human Resources Development Institute</p>
+        </div>
+      </div>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-8">
+        <button onclick="scrollToSection('intro')" class="text-sm font-semibold text-stone-700 hover:text-forest-600 transition">기관소개</button>
+        <button onclick="scrollToSection('programs')" class="text-sm font-semibold text-stone-700 hover:text-forest-600 transition">주요 업무·교육체계</button>
+        <button onclick="scrollToSection('campus-guide')" class="text-sm font-semibold text-stone-700 hover:text-forest-600 transition">캠퍼스 안내</button>
+        <button onclick="scrollToSection('directions')" class="text-sm font-semibold text-forest-600 hover:text-forest-700 transition flex items-center gap-1">
+          <i data-lucide="map-pin" class="w-4 h-4 text-warmGold-500"></i> 찾아오는 길
+        </button>
+        <button onclick="scrollToSection('partners')" class="text-sm font-semibold text-stone-700 hover:text-forest-600 transition">협력 네트워크</button>
+      </nav>
+
+      <!-- Action Button -->
+      <div class="hidden sm:flex items-center gap-3">
+        <button onclick="selectTab('jincheon'); scrollToSection('directions');" class="bg-forest-600 hover:bg-forest-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+          <i data-lucide="bus" class="w-4 h-4 text-warmGold-400"></i> 셔틀버스 시간표
+        </button>
+      </div>
+
+      <!-- Mobile Menu Toggle -->
+      <button id="mobileMenuBtn" class="md:hidden p-2 text-stone-600 hover:text-stone-900">
+        <i data-lucide="menu" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Nav Dropdown -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white border-b border-stone-200 px-4 pt-2 pb-4 space-y-2">
+      <button onclick="scrollToSection('intro'); toggleMobileMenu()" class="block w-full text-left py-2 text-sm font-medium text-stone-700">기관소개</button>
+      <button onclick="scrollToSection('programs'); toggleMobileMenu()" class="block w-full text-left py-2 text-sm font-medium text-stone-700">주요 업무·교육체계</button>
+      <button onclick="scrollToSection('campus-guide'); toggleMobileMenu()" class="block w-full text-left py-2 text-sm font-medium text-stone-700">캠퍼스 안내</button>
+      <button onclick="scrollToSection('directions'); toggleMobileMenu()" class="block w-full text-left py-2 text-sm font-bold text-forest-700">찾아오는 길 & 셔틀버스</button>
+      <button onclick="scrollToSection('partners'); toggleMobileMenu()" class="block w-full text-left py-2 text-sm font-medium text-stone-700">협력 네트워크</button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative bg-forest-900 text-white overflow-hidden py-20 sm:py-28 hero-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Hero Text -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-forest-800/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold backdrop-blur-sm">
+            <span class="w-2 h-2 rounded-full bg-warmGold-400"></span>
+            인사혁신처 소속 중앙공무원 인재양성 핵심기관
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
+            국민에게 헌신하는 공직자,<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-warmGold-400">
+              미래를 선도하는 국가인재
+            </span>
+          </h1>
+          <p class="text-base sm:text-lg text-emerald-100/90 leading-relaxed max-w-2xl">
+            국가공무원인재개발원(NHI)은 헌법 정신과 봉사 철학을 바탕으로, 디지털 행정혁신과 글로벌 정책 역량을 겸비한 대한민국 핵심 공직자를 양성합니다.
+          </p>
+
+          <!-- Quick Navigation Buttons -->
+          <div class="pt-2 flex flex-wrap gap-3">
+            <button onclick="selectTab('jincheon'); scrollToSection('directions');" class="bg-forest-600 hover:bg-forest-500 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-forest-950/40 transition flex items-center gap-2 border border-emerald-500/30">
+              <i data-lucide="map-pin" class="w-5 h-5 text-warmGold-400"></i>
+              <span>진천 본원 찾아오기</span>
+            </button>
+            <button onclick="selectTab('gwacheon'); scrollToSection('directions');" class="bg-stone-800/80 hover:bg-stone-700 text-stone-100 border border-stone-600 px-6 py-3.5 rounded-xl font-bold backdrop-blur-sm transition flex items-center gap-2">
+              <i data-lucide="navigation" class="w-5 h-5 text-emerald-400"></i>
+              <span>과천 캠퍼스 찾아오기</span>
+            </button>
+            <button onclick="scrollToSection('programs');" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-3.5 rounded-xl font-semibold backdrop-blur-sm transition">
+              교육체계 살펴보기
+            </button>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-forest-800">
+            <div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-warmGold-400">1949년</div>
+              <div class="text-xs text-emerald-200/70 mt-1">국립공무원훈련원 개원</div>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-white">2개 캠퍼스</div>
+              <div class="text-xs text-emerald-200/70 mt-1">충북 진천 & 경기 과천</div>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-warmGold-400">연간 20만+명</div>
+              <div class="text-xs text-emerald-200/70 mt-1">집합 및 온라인 교육 수료</div>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-white">150여 개국</div>
+              <div class="text-xs text-emerald-200/70 mt-1">글로벌 공공 HRD 협력</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Illustration: Civil Servants Working Hard (그림 일러스트레이션) -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="relative w-full max-w-md bg-gradient-to-br from-forest-800/90 to-stone-900/90 p-5 rounded-3xl border border-emerald-500/30 shadow-2xl backdrop-blur-md">
+            <div class="text-xs font-bold text-warmGold-400 mb-2 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> 국민을 위해 연구하고 정책을 기획하는 공직자
+            </div>
+            <!-- Custom Vector Illustration -->
+            <div class="rounded-2xl overflow-hidden bg-forest-950/60 p-3 border border-forest-700/50">
+              <svg viewBox="0 0 500 380" class="w-full h-auto drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background Office / Seminar room -->
+                <rect width="500" height="380" rx="16" fill="#0f2e1b"/>
+                <circle cx="250" cy="180" r="140" fill="#164d2d" opacity="0.6"/>
+                <!-- Window / City View Grid -->
+                <rect x="50" y="40" width="120" height="90" rx="8" fill="#1c5d37" opacity="0.5"/>
+                <line x1="110" y1="40" x2="110" y2="130" stroke="#2e7d4d" stroke-width="2"/>
+                <line x1="50" y1="85" x2="170" y2="85" stroke="#2e7d4d" stroke-width="2"/>
+                <!-- Board with Policy Diagram -->
+                <rect x="310" y="35" width="140" height="90" rx="8" fill="#fdfbf7" stroke="#fbbf24" stroke-width="2"/>
+                <text x="325" y="60" font-family="Pretendard, sans-serif" font-size="11" font-weight="bold" fill="#166534">국가 핵심 정책 기획</text>
+                <path d="M325 85 L355 70 L385 80 L425 65" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="325" cy="85" r="3" fill="#166534"/>
+                <circle cx="355" cy="70" r="3" fill="#166534"/>
+                <circle cx="385" cy="80" r="3" fill="#166534"/>
+                <circle cx="425" cy="65" r="4" fill="#d97706"/>
+                <rect x="325" y="100" width="110" height="12" rx="4" fill="#e2e8f0"/>
+                
+                <!-- Meeting Table -->
+                <ellipse cx="250" cy="280" rx="210" ry="65" fill="#1e293b"/>
+                <ellipse cx="250" cy="275" rx="195" ry="55" fill="#334155"/>
+                <ellipse cx="250" cy="270" rx="180" ry="45" fill="#475569"/>
+
+                <!-- Laptops and Documents on table -->
+                <!-- Laptop Center -->
+                <polygon points="220,250 280,250 290,265 210,265" fill="#94a3b8"/>
+                <rect x="225" y="222" width="50" height="28" rx="2" fill="#0284c7" stroke="#cbd5e1" stroke-width="1.5"/>
+                <line x1="235" y1="235" x2="265" y2="235" stroke="#ffffff" stroke-width="2"/>
+                <!-- Policy Report Folder -->
+                <rect x="130" y="250" width="35" height="25" rx="3" fill="#fbbf24" transform="rotate(-12 130 250)"/>
+                <rect x="330" y="252" width="35" height="25" rx="3" fill="#38bdf8" transform="rotate(15 330 252)"/>
+                <circle cx="305" cy="275" r="6" fill="#f8fafc"/> <!-- Coffee cup -->
+
+                <!-- Civil Servant 1 (Left - Woman presenting / discussing) -->
+                <!-- Body -->
+                <path d="M100 340 C100 280, 150 270, 165 340 Z" fill="#047857"/>
+                <!-- Neck & Collar -->
+                <path d="M125 270 L140 270 L132 285 Z" fill="#fed7aa"/>
+                <path d="M120 270 L132 288 L145 270" fill="none" stroke="#ffffff" stroke-width="2.5"/>
+                <!-- Head -->
+                <circle cx="132" cy="245" r="20" fill="#fbcfe8"/>
+                <!-- Hair (neat bob cut) -->
+                <path d="M112 245 C112 220, 152 220, 152 245 C152 255, 148 260, 145 260 C140 250, 125 250, 118 260 Z" fill="#1f2937"/>
+                <!-- Arm raised pointing to board -->
+                <path d="M145 295 Q180 260 195 240" stroke="#047857" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="195" cy="240" r="5" fill="#fbcfe8"/>
+
+                <!-- Civil Servant 2 (Center - Man typing on laptop & analyzing data) -->
+                <path d="M210 340 C210 275, 290 275, 290 340 Z" fill="#1e3a8a"/>
+                <!-- White Shirt and Tie -->
+                <polygon points="243,268 257,268 253,285 247,285" fill="#ffffff"/>
+                <polygon points="248,274 252,274 254,300 250,306 246,300" fill="#dc2626"/> <!-- Red tie -->
+                <!-- Head -->
+                <circle cx="250" cy="235" r="22" fill="#fed7aa"/>
+                <!-- Hair and Glasses -->
+                <path d="M230 235 C230 215, 270 215, 270 235 C270 220, 230 220, 230 235" fill="#111827"/>
+                <rect x="238" y="232" width="10" height="7" rx="2" fill="none" stroke="#374151" stroke-width="1.5"/>
+                <rect x="252" y="232" width="10" height="7" rx="2" fill="none" stroke="#374151" stroke-width="1.5"/>
+                <line x1="248" y1="235" x2="252" y2="235" stroke="#374151" stroke-width="1.5"/>
+                <!-- Arms to keyboard -->
+                <path d="M220 305 L235 270" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round"/>
+                <path d="M280 305 L265 270" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round"/>
+
+                <!-- Civil Servant 3 (Right - Senior Mentor / Director discussing policy) -->
+                <path d="M335 340 C350 270, 400 280, 400 340 Z" fill="#334155"/>
+                <!-- Neck and Blue Shirt -->
+                <path d="M360 270 L375 270 L368 285 Z" fill="#fed7aa"/>
+                <path d="M356 270 L368 286 L380 270" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                <!-- Head -->
+                <circle cx="368" cy="245" r="20" fill="#fed7aa"/>
+                <!-- Graying neat hair -->
+                <path d="M348 245 C348 220, 388 220, 388 245 C388 230, 348 230, 348 245" fill="#475569"/>
+                <!-- Gesturing Hand holding pen -->
+                <path d="M345 295 Q320 275 305 265" stroke="#334155" stroke-width="10" stroke-linecap="round"/>
+                <line x1="305" y1="265" x2="295" y2="255" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="text-[11px] text-stone-300 text-center mt-2 font-medium">
+              "국민의 목소리를 경청하고 데이터를 기반으로 더 나은 대한민국을 설계합니다"
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Info Notification Banner -->
+  <div class="bg-forest-800 text-emerald-50 py-3.5 border-y border-forest-700 shadow-inner">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
+      <div class="flex items-center gap-3">
+        <span class="p-1.5 bg-forest-900 rounded-lg text-warmGold-400">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+        </span>
+        <div>
+          <strong class="font-bold text-warmGold-300">신속 안내:</strong> 진천 본원은 사전등록 차량에 한해 원내 주차 가능하며, 과천 캠퍼스는 대중교통 및 전철역 셔틀버스를 필히 이용해 주시기 바랍니다.
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <span class="text-xs bg-forest-900/80 px-3 py-1 rounded-full border border-forest-700 text-emerald-200">진천 대표: 043-931-6000</span>
+        <span class="text-xs bg-forest-900/80 px-3 py-1 rounded-full border border-forest-700 text-emerald-200">과천 대표: 02-503-8020</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 1: Overview & Vision with Working Servants Illustration -->
+  <section id="intro" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-50 px-3 py-1 rounded-full border border-forest-200">Vision & Mission</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-stone-900 mt-3 mb-4 tracking-tight">국가공무원인재개발원의 비전과 사명</h2>
+        <p class="text-stone-600 text-base leading-relaxed">
+          국가공무원인재개발원은 헌법 정신과 공직가치를 바탕으로, 복합적 난제를 해결하고 대한민국의 새로운 미래를 이끌어갈 최고 역량의 인재를 육성합니다.
+        </p>
+      </div>
+
+      <!-- Feature with In-depth Working Illustration -->
+      <div class="mb-16 bg-gradient-to-r from-forest-50 via-stone-50 to-emerald-50 rounded-3xl p-8 lg:p-12 border border-forest-100 shadow-sm">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div class="lg:col-span-6 space-y-4">
+            <div class="inline-flex items-center gap-2 text-xs font-bold text-forest-700 bg-white px-3 py-1 rounded-full border border-forest-200">
+              <i data-lucide="compass" class="w-4 h-4 text-warmGold-500"></i> 미래 공직자 역량 모델
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-stone-900 leading-snug">
+              현장에서 답을 찾는<br>
+              <span class="text-forest-700">실천적 문제해결형 리더</span> 양성
+            </h3>
+            <p class="text-stone-600 text-sm leading-relaxed">
+              단순한 지식 전달 위주의 강의를 탈피하여, 공무원들이 부처 간 칸막이를 허물고 실제 국가 현안과 민생 정책을 분석·토론하여 해법을 도출하는 액션러닝(Action Learning)과 정책 시뮬레이션을 집중 실시합니다.
+            </p>
+            <div class="pt-2 grid grid-cols-2 gap-3 text-xs">
+              <div class="flex items-center gap-2 text-stone-700 font-semibold bg-white p-2.5 rounded-xl border border-stone-200">
+                <i data-lucide="check" class="w-4 h-4 text-forest-600"></i> 현장 밀착형 정책 기획
+              </div>
+              <div class="flex items-center gap-2 text-stone-700 font-semibold bg-white p-2.5 rounded-xl border border-stone-200">
+                <i data-lucide="check" class="w-4 h-4 text-forest-600"></i> 국민 소통 및 공감 역량
+              </div>
+              <div class="flex items-center gap-2 text-stone-700 font-semibold bg-white p-2.5 rounded-xl border border-stone-200">
+                <i data-lucide="check" class="w-4 h-4 text-forest-600"></i> AI·데이터 분석 의사결정
+              </div>
+              <div class="flex items-center gap-2 text-stone-700 font-semibold bg-white p-2.5 rounded-xl border border-stone-200">
+                <i data-lucide="check" class="w-4 h-4 text-forest-600"></i> 청렴·공익 중심 공직윤리
+              </div>
+            </div>
+          </div>
+
+          <!-- Illustration: Discussion & Field Analysis (일러스트레이션 2) -->
+          <div class="lg:col-span-6 flex justify-center">
+            <div class="w-full max-w-lg bg-white rounded-2xl p-5 border border-forest-200 shadow-md">
+              <div class="text-xs font-bold text-stone-700 mb-2 flex items-center justify-between border-b pb-2">
+                <span class="flex items-center gap-1.5 text-forest-700">
+                  <i data-lucide="users" class="w-4 h-4"></i> 정책과제 토의 및 연구 현장
+                </span>
+                <span class="text-[11px] text-stone-400">신임관리자 분임토의</span>
+              </div>
+              
+              <svg viewBox="0 0 520 320" class="w-full h-auto rounded-xl bg-gradient-to-b from-stone-100 to-emerald-50/50" xmlns="http://www.w3.org/2000/svg">
+                <!-- Whiteboard backdrop -->
+                <rect x="20" y="20" width="480" height="280" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+                
+                <!-- Whiteboard Diagrams -->
+                <rect x="40" y="40" width="130" height="75" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+                <text x="50" y="60" font-family="Pretendard, sans-serif" font-size="10" font-weight="bold" fill="#15803d">1단계: 현장 실태 조사</text>
+                <text x="50" y="78" font-family="Pretendard, sans-serif" font-size="9" fill="#475569">• 대국민 민원 빅데이터 분석</text>
+                <text x="50" y="94" font-family="Pretendard, sans-serif" font-size="9" fill="#475569">• 현장 방문 및 인터뷰</text>
+
+                <!-- Arrow -->
+                <path d="M175 75 L195 75" stroke="#166534" stroke-width="2" marker-end="url(#arrow)"/>
+                
+                <rect x="200" y="40" width="130" height="75" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+                <text x="210" y="60" font-family="Pretendard, sans-serif" font-size="10" font-weight="bold" fill="#1d4ed8">2단계: 부처 협업 조정</text>
+                <text x="210" y="78" font-family="Pretendard, sans-serif" font-size="9" fill="#475569">• 다부처 복합 이슈 해법 도출</text>
+                <text x="210" y="94" font-family="Pretendard, sans-serif" font-size="9" fill="#475569">• 규제 혁신 시뮬레이션</text>
+
+                <path d="M335 75 L355 75" stroke="#166534" stroke-width="2"/>
+
+                <rect x="360" y="40" width="120" height="75" rx="6" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+                <text x="370" y="60" font-family="Pretendard, sans-serif" font-size="10" font-weight="bold" fill="#a16207">3단계: 국민체감 실행</text>
+                <text x="370" y="78" font-family="Pretendard, sans-serif" font-size="9" fill="#475569">• 원스톱 행정서비스 적용</text>
+                <text x="370" y="94" font-family="Pretendard, sans-serif" font-size="9" fill="#475569">• 모니터링 & 성과 환류</text>
+
+                <!-- 3 Working Public Officials (Flat Vector Character Style) -->
+                <!-- Character A (Standing Female Officer with Clipboard) -->
+                <ellipse cx="120" cy="275" rx="20" ry="6" fill="#cbd5e1"/>
+                <path d="M105 280 L115 210 L130 210 L135 280 Z" fill="#334155"/> <!-- Trousers -->
+                <path d="M102 215 C102 180, 140 180, 140 215 Z" fill="#0d9488"/> <!-- Teal blazer -->
+                <circle cx="121" cy="155" r="16" fill="#fed7aa"/> <!-- Head -->
+                <path d="M106 155 C106 135, 136 135, 136 155 C136 142, 106 142, 106 155" fill="#1e293b"/> <!-- Hair -->
+                <!-- Clipboard -->
+                <rect x="130" y="185" width="22" height="30" rx="3" fill="#d97706" transform="rotate(8 130 185)"/>
+                <rect x="133" y="190" width="16" height="20" fill="#ffffff" transform="rotate(8 130 185)"/>
+
+                <!-- Character B (Seated Officer with Tablet, engaging in debate) -->
+                <ellipse cx="260" cy="275" rx="28" ry="8" fill="#cbd5e1"/>
+                <rect x="240" y="225" width="40" height="50" rx="4" fill="#1e293b"/> <!-- Chair -->
+                <path d="M242 280 L252 230 L270 230 L278 280 Z" fill="#475569"/>
+                <path d="M238 230 C238 185, 282 185, 282 230 Z" fill="#15803d"/> <!-- Green jacket -->
+                <polygon points="256,192 264,192 261,208 259,208" fill="#ffffff"/>
+                <circle cx="260" cy="160" r="16" fill="#fed7aa"/> <!-- Head -->
+                <path d="M245 160 C245 142, 275 142, 275 160" fill="#0f172a"/>
+                <!-- Tablet held in hands -->
+                <rect x="250" y="195" width="28" height="20" rx="2" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" transform="rotate(-15 250 195)"/>
+
+                <!-- Character C (Officer Writing on Board) -->
+                <ellipse cx="400" cy="275" rx="22" ry="6" fill="#cbd5e1"/>
+                <path d="M385 280 L395 210 L410 210 L415 280 Z" fill="#1e293b"/>
+                <path d="M380 215 C380 180, 420 180, 420 215 Z" fill="#3b82f6"/> <!-- Blue sweater -->
+                <circle cx="400" cy="155" r="16" fill="#fed7aa"/>
+                <path d="M385 155 C385 136, 415 136, 415 155" fill="#334155"/>
+                <!-- Arm reaching to board with marker -->
+                <path d="M410 180 Q430 145 440 125" stroke="#3b82f6" stroke-width="8" stroke-linecap="round"/>
+                <circle cx="440" cy="125" r="4" fill="#fed7aa"/>
+                <line x1="440" y1="125" x2="446" y2="118" stroke="#16a34a" stroke-width="3" stroke-linecap="round"/>
+                <!-- Star check mark on board -->
+                <path d="M448 112 L454 118 L466 104" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+
+              <div class="text-[11px] text-stone-500 mt-2 text-center">
+                실제 정책 사례를 모의 집행하고 법제·예산 타당성을 종합 검토하는 공직 실무 실습
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 3 Vision Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-2xl border border-stone-200 hover:border-forest-500 hover:shadow-lg transition">
+          <div class="w-12 h-12 bg-forest-100 text-forest-700 rounded-xl flex items-center justify-center mb-6">
+            <i data-lucide="shield" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-stone-900 mb-2">공직가치 확립</h3>
+          <p class="text-sm font-bold text-forest-600 mb-3">국민을 섬기는 올바른 공직자세</p>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            헌법적 가치 수호와 청렴·윤리, 공정하고 투명한 직무 수행을 내재화하여 국민에게 두터운 신뢰를 받는 공직 문화를 정착시킵니다.
+          </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-stone-200 hover:border-forest-500 hover:shadow-lg transition">
+          <div class="w-12 h-12 bg-teal-100 text-tealGov-700 rounded-xl flex items-center justify-center mb-6">
+            <i data-lucide="cpu" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-stone-900 mb-2">AI·스마트 행정선도</h3>
+          <p class="text-sm font-bold text-tealGov-600 mb-3">과학적 데이터 기반 정책 결정</p>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            생성형 인공지능과 데이터 분석 역량을 강화하여 민생 현장의 복잡한 요구를 빠르고 정밀하게 해결하는 디지털 정부를 구현합니다.
+          </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-stone-200 hover:border-forest-500 hover:shadow-lg transition">
+          <div class="w-12 h-12 bg-amber-100 text-warmGold-600 rounded-xl flex items-center justify-center mb-6">
+            <i data-lucide="globe-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-stone-900 mb-2">글로벌 공공 HRD</h3>
+          <p class="text-sm font-bold text-warmGold-600 mb-3">세계와 호흡하는 글로벌 리더</p>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            외국 공무원 연수 및 국제기구와의 협력을 통해 한국의 우수한 행정 제도를 세계에 알리고 글로벌 중추국가 위상을 확립합니다.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section 2: Major Responsibilities & Programs -->
+  <section id="programs" class="py-20 bg-stone-100 border-t border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-100 px-3 py-1 rounded-full border border-forest-200">Curriculum & Duties</span>
+          <h2 class="text-3xl font-extrabold text-stone-900 mt-3 tracking-tight">주요 업무 및 교육체계</h2>
+          <p class="text-stone-600 text-sm mt-2 max-w-2xl">
+            공직 입문부터 고위 공직자까지 생애주기별 맞춤형 교육훈련과 디지털 신기술 전문 역량을 체계적으로 전수합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4 Pillars Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Pillar 1 -->
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:border-forest-500 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-forest-50 text-forest-700 flex items-center justify-center mb-5">
+              <i data-lucide="users-2" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-stone-900 tracking-tight">기본교육 (직급별 역량)</h3>
+            <p class="text-xs text-forest-600 font-semibold mt-1 mb-4">공직 리더십 파이프라인</p>
+            <div class="space-y-3.5 mb-6 text-xs text-stone-600">
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">고위정책과정</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">국장급 전략 리더십 및 국정과제 공유</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">신임과장과정</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">조직관리·코칭 및 부처 간 갈등 조정</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">신임관리자과정</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">5급 공채·경채 공직가치 및 실무 역량</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-[11px] bg-stone-100 text-stone-600 px-3 py-1.5 rounded-lg font-medium text-center">진천 본원 중심 합숙교육</div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:border-tealGov-500 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-teal-50 text-tealGov-600 flex items-center justify-center mb-5">
+              <i data-lucide="landmark" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-stone-900 tracking-tight">공직가치 & 윤리교육</h3>
+            <p class="text-xs text-tealGov-600 font-semibold mt-1 mb-4">국민 중심 청렴 행정</p>
+            <div class="space-y-3.5 mb-6 text-xs text-stone-600">
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-tealGov-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">헌법정신 함양</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">국민주권과 법치주의, 공공복리 소명</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-tealGov-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">청렴 & 이해충돌방지</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">부패 근절 및 공정·투명한 직무 수행</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-tealGov-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">적극행정 실천</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">소극행정 타파 및 창의적 규제 혁신</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-[11px] bg-stone-100 text-stone-600 px-3 py-1.5 rounded-lg font-medium text-center">전 공무원 필수 이수</div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:border-amber-500 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-warmGold-600 flex items-center justify-center mb-5">
+              <i data-lucide="binary" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-stone-900 tracking-tight">AI·디지털 직무혁신</h3>
+            <p class="text-xs text-warmGold-600 font-semibold mt-1 mb-4">디지털플랫폼정부 구현</p>
+            <div class="space-y-3.5 mb-6 text-xs text-stone-600">
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-warmGold-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">생성형 AI 행정실습</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">정책보고서 초안 작성 및 프롬프트 실무</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-warmGold-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">데이터 기반 행정</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">공공데이터 통계 분석 및 정책 설계</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-warmGold-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">사이버 보안 대응</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">국가 전산망 보안 및 디지털 리스크 관리</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-[11px] bg-amber-100 text-warmGold-800 px-3 py-1.5 rounded-lg font-bold text-center">신설 미래혁신 과정</div>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:border-forest-500 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-forest-700 flex items-center justify-center mb-5">
+              <i data-lucide="laptop" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-stone-900 tracking-tight">글로벌 & 이러닝</h3>
+            <p class="text-xs text-forest-600 font-semibold mt-1 mb-4">나라배움터 & 외국공무원</p>
+            <div class="space-y-3.5 mb-6 text-xs text-stone-600">
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">나라배움터 상시학습</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">365일 범정부 온라인 e-러닝 플랫폼</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">외국공무원 초청연수</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">한국형 우수 행정제도 및 발전 모델 전파</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-600 shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="font-bold text-stone-900">국제 HRD 협력포럼</div>
+                  <div class="text-[11px] text-stone-500 leading-relaxed mt-0.5">OECD 등 세계 교육기관 네트워크 교류</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-[11px] bg-stone-100 text-stone-600 px-3 py-1.5 rounded-lg font-medium text-center">과천 캠퍼스 & 온라인망</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Dual Campus Guide -->
+  <section id="campus-guide" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-50 px-3 py-1 rounded-full border border-forest-200">Campuses</span>
+        <h2 class="text-3xl font-extrabold text-stone-900 mt-3 mb-4 tracking-tight">이원화 캠퍼스 운영 체계</h2>
+        <p class="text-stone-600 text-base">
+          최첨단 대규모 교육·숙식 시설을 구비한 <strong>충북 진천 본원</strong>과,<br class="hidden sm:inline">
+          수도권 접근성과 국제 교류에 특화된 <strong>경기 과천 캠퍼스</strong>로 운영됩니다.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Jincheon Card -->
+        <div class="border border-forest-200 bg-gradient-to-br from-forest-50/60 to-white rounded-3xl p-8 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-6">
+            <span class="bg-forest-700 text-white text-xs font-bold px-3 py-1.5 rounded-full">중심 본원 (합숙·기본교육)</span>
+            <span class="text-xs font-semibold text-stone-500 flex items-center gap-1">
+              <i data-lucide="map-pin" class="w-4 h-4 text-forest-600"></i> 충북 진천군 덕산읍
+            </span>
+          </div>
+
+          <h3 class="text-2xl font-bold text-stone-900 mb-2">진천 본원 (충북혁신도시)</h3>
+          <p class="text-stone-600 text-sm mb-6 leading-relaxed">
+            쾌적한 친환경 대단지 캠퍼스로 5급 공채 신임관리자과정, 국장급 고위정책과정 등 핵심 리더십 기본교육과 합숙 연구를 총괄합니다.
+          </p>
+
+          <div class="space-y-3 bg-white p-5 rounded-2xl border border-forest-100 shadow-sm text-sm">
+            <div class="flex items-center justify-between py-1 border-b border-stone-100">
+              <span class="text-stone-500 font-medium">담당 기능</span>
+              <span class="font-bold text-stone-800">5급 공채/승진, 핵심 관리자 기본교육, 국장급 과정</span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-stone-100">
+              <span class="text-stone-500 font-medium">주차 여건</span>
+              <span class="font-bold text-forest-700">원내 주차 가능 (502대, 사전등록 권장)</span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-stone-100">
+              <span class="text-stone-500 font-medium">원내 시설</span>
+              <span class="text-stone-700">기숙사(보람관·나눔관), 대강당, 헬스장, 실내체육관</span>
+            </div>
+            <div class="flex items-center justify-between py-1">
+              <span class="text-stone-500 font-medium">종합 상황실</span>
+              <span class="font-bold text-stone-900">043-931-6000 (야간 043-931-6062)</span>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <button onclick="selectTab('jincheon'); scrollToSection('directions');" class="w-full bg-forest-600 hover:bg-forest-700 text-white font-semibold py-3 px-4 rounded-xl text-center text-sm transition">
+              진천본원 교통편 & 찾아오는 길 보기
+            </button>
+          </div>
+        </div>
+
+        <!-- Gwacheon Card -->
+        <div class="border border-stone-300 bg-gradient-to-br from-stone-50 to-white rounded-3xl p-8 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-6">
+            <span class="bg-stone-800 text-white text-xs font-bold px-3 py-1.5 rounded-full">글로벌 캠퍼스 (수도권)</span>
+            <span class="text-xs font-semibold text-stone-500 flex items-center gap-1">
+              <i data-lucide="map-pin" class="w-4 h-4 text-stone-700"></i> 경기 과천시 막계동
+            </span>
+          </div>
+
+          <h3 class="text-2xl font-bold text-stone-900 mb-2">과천 캠퍼스 (수도권 분원)</h3>
+          <p class="text-stone-600 text-sm mb-6 leading-relaxed">
+            청계산 자락의 쾌적한 숲속 캠퍼스로 외국공무원 초청 연수, 국제공공 HRD 협력 및 수도권 중앙부처 특화 전문 직무 교육을 전담합니다.
+          </p>
+
+          <div class="space-y-3 bg-white p-5 rounded-2xl border border-stone-200 shadow-sm text-sm">
+            <div class="flex items-center justify-between py-1 border-b border-stone-100">
+              <span class="text-stone-500 font-medium">담당 기능</span>
+              <span class="font-bold text-stone-800">국제교류, 외국공무원 연수, 특화 직무교육</span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-stone-100">
+              <span class="text-stone-500 font-medium">주차 여건</span>
+              <span class="font-bold text-red-600">일반 교육생 차량진입 통제 (대중교통 필수)</span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-stone-100">
+              <span class="text-stone-500 font-medium">교통 지원</span>
+              <span class="text-stone-700">4호선 정부과천청사역 6번 출구 전용 셔틀버스</span>
+            </div>
+            <div class="flex items-center justify-between py-1">
+              <span class="text-stone-500 font-medium">종합 상황실</span>
+              <span class="font-bold text-stone-900">02-503-8020 (야간 02-500-8620)</span>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <button onclick="selectTab('gwacheon'); scrollToSection('directions');" class="w-full bg-stone-800 hover:bg-stone-900 text-white font-semibold py-3 px-4 rounded-xl text-center text-sm transition">
+              과천캠퍼스 교통편 & 찾아오는 길 보기
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Directions (찾아오는 길 & 셔틀버스) -->
+  <section id="directions" class="py-20 bg-stone-100 border-t border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-100 px-3 py-1 rounded-full border border-forest-200">Directions</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-stone-900 mt-3 mb-4 tracking-tight">캠퍼스별 찾아오는 길 & 셔틀버스 안내</h2>
+        <p class="text-stone-600 text-base">
+          방문하시려는 캠퍼스를 선택하시면 상세 지도, 내비게이션 길찾기, 셔틀버스 배차 시간표를 확인하실 수 있습니다.
+        </p>
+      </div>
+
+      <!-- Campus Tab Switcher -->
+      <div class="flex justify-center mb-8">
+        <div class="inline-flex bg-white p-1.5 rounded-2xl shadow-sm border border-stone-200">
+          <button id="tab-jincheon" onclick="selectTab('jincheon')" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 bg-forest-600 text-white shadow-sm">
+            <i data-lucide="building" class="w-4 h-4"></i> 진천 본원 (충북)
+          </button>
+          <button id="tab-gwacheon" onclick="selectTab('gwacheon')" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-stone-600 hover:text-stone-900 transition-all duration-200">
+            <i data-lucide="building-2" class="w-4 h-4"></i> 과천 캠퍼스 (경기)
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT: JINCHEON -->
+      <div id="content-jincheon" class="space-y-8">
+        
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-stone-200">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="bg-forest-100 text-forest-800 text-xs font-bold px-2.5 py-0.5 rounded">진천 본원</span>
+                <span class="text-stone-400 text-xs">우편번호 27873</span>
+              </div>
+              <h3 class="text-2xl font-bold text-stone-900">충청북도 진천군 덕산읍 교학로 30</h3>
+              <p class="text-stone-500 text-sm mt-1">(충북혁신도시 내 국가공무원인재개발원)</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <button onclick="copyToClipboard('충청북도 진천군 덕산읍 교학로 30', '진천본원 주소가 클립보드에 복사되었습니다!')" class="bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="copy" class="w-4 h-4"></i> 주소 복사
+              </button>
+              <a href="https://map.kakao.com/link/search/국가공무원인재개발원 진천본원" target="_blank" class="bg-warmGold-400 hover:bg-warmGold-500 text-stone-900 text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="map" class="w-4 h-4"></i> 카카오맵 길찾기
+              </a>
+              <a href="https://map.naver.com/v5/search/국가공무원인재개발원 진천본원" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="navigation" class="w-4 h-4"></i> 네이버 지도 길찾기
+              </a>
+            </div>
+          </div>
+
+          <!-- Map and Transit Details -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
+            <div class="lg:col-span-7 h-[380px] rounded-2xl overflow-hidden border border-stone-200 relative shadow-inner">
+              <div id="map-jincheon-container" class="w-full h-full"></div>
+              <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-700 shadow border border-stone-200 z-[400] flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-forest-600 animate-pulse"></span>
+                충북 진천군 덕산읍 교학로 30 (위도 36.9142, 경도 127.5258)
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+              <!-- Detail 1: Bus -->
+              <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200">
+                <div class="flex items-center gap-2 text-forest-700 font-bold text-sm mb-1.5">
+                  <i data-lucide="bus" class="w-4 h-4"></i> 시외·고속버스 및 대중교통
+                </div>
+                <p class="text-xs text-stone-600 leading-relaxed">
+                  <strong>충북혁신도시 공용버스터미널</strong> 하차 후 원내 셔틀버스 또는 택시 이용 (차량 약 5~7분 소요, 택시요금 약 4,000원선)
+                </p>
+                <div class="text-[11px] text-stone-500 mt-2 bg-white p-2 rounded-lg border border-stone-200">
+                  • 서울(남부터미널/동서울), 수원, 대전, 청주에서 충북혁신도시행 직행 버스 운행
+                </div>
+              </div>
+
+              <!-- Detail 2: Car -->
+              <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200">
+                <div class="flex items-center gap-2 text-stone-800 font-bold text-sm mb-1.5">
+                  <i data-lucide="car" class="w-4 h-4 text-forest-600"></i> 자가용 및 주차안내
+                </div>
+                <p class="text-xs text-stone-600 leading-relaxed">
+                  중부고속도로 <strong>진천IC</strong> 또는 <strong>음성IC</strong> 진출 → 충북혁신도시 방면 (IC에서 약 10~15분)
+                </p>
+                <div class="text-[11px] text-forest-700 font-semibold mt-2 bg-forest-50 p-2 rounded-lg border border-forest-200">
+                  💡 주차면수 약 502대 완비. 교육생 차량은 입교 전 사전 차량등록을 진행해야 차단기 자동 통과가 가능합니다.
+                </div>
+              </div>
+
+              <!-- Detail 3: Phone -->
+              <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center justify-between text-xs">
+                <div>
+                  <div class="font-bold text-stone-800">진천 본원 안내실 / 당직실</div>
+                  <div class="text-stone-500">주간 043-931-6000 / 야간 043-931-6062</div>
+                </div>
+                <a href="tel:043-931-6000" class="bg-white px-3 py-1.5 rounded-lg border border-stone-300 font-bold text-forest-700 hover:bg-forest-50">
+                  전화걸기
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shuttle Bus Table Jincheon -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-forest-200 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-forest-100 text-forest-700 rounded-xl flex items-center justify-center">
+              <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-stone-900">진천 본원 셔틀버스 배차 시간표</h4>
+              <p class="text-xs text-stone-500">충북혁신도시 공용버스터미널 건너편 ⇄ 진천본원 정문</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border border-stone-200 rounded-2xl p-5 bg-stone-50">
+              <div class="flex items-center justify-between font-bold text-sm text-forest-800 mb-3 pb-2 border-b border-stone-200">
+                <span class="flex items-center gap-1.5"><i data-lucide="sun" class="w-4 h-4 text-warmGold-500"></i> 아침 입교·출근 (터미널 → 본원)</span>
+                <span class="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded">상행</span>
+              </div>
+              <table class="w-full text-xs text-stone-700">
+                <thead>
+                  <tr class="text-stone-400 border-b border-stone-200">
+                    <th class="py-2 text-left font-semibold">회차</th>
+                    <th class="py-2 text-left font-semibold">터미널 출발 시각</th>
+                    <th class="py-2 text-left font-semibold">비고</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-200">
+                  <tr><td class="py-2 font-medium">1회차</td><td class="py-2 font-bold text-forest-700">08:00</td><td>정시 출발</td></tr>
+                  <tr><td class="py-2 font-medium">2회차</td><td class="py-2 font-bold text-forest-700">08:20</td><td>터미널 건너편 버스정류소 앞</td></tr>
+                  <tr><td class="py-2 font-medium">집중운행</td><td class="py-2 font-bold text-forest-700">08:30 ~ 09:20</td><td>개강일 10분 간격 탄력 순환 운행</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="border border-stone-200 rounded-2xl p-5 bg-stone-50">
+              <div class="flex items-center justify-between font-bold text-sm text-stone-800 mb-3 pb-2 border-b border-stone-200">
+                <span class="flex items-center gap-1.5"><i data-lucide="moon" class="w-4 h-4 text-forest-600"></i> 교육 종료·퇴소 (본원 → 터미널)</span>
+                <span class="text-xs bg-stone-200 text-stone-700 px-2 py-0.5 rounded">하행</span>
+              </div>
+              <table class="w-full text-xs text-stone-700">
+                <thead>
+                  <tr class="text-stone-400 border-b border-stone-200">
+                    <th class="py-2 text-left font-semibold">회차</th>
+                    <th class="py-2 text-left font-semibold">본원 출발 시각</th>
+                    <th class="py-2 text-left font-semibold">비고</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-200">
+                  <tr><td class="py-2 font-medium">1회차</td><td class="py-2 font-bold text-stone-800">17:10</td><td>정문 셔틀 승강장</td></tr>
+                  <tr><td class="py-2 font-medium">2회차</td><td class="py-2 font-bold text-stone-800">18:05</td><td>수업 종료 시간에 맞춤</td></tr>
+                  <tr><td class="py-2 font-medium">금요일 퇴소</td><td class="py-2 font-bold text-forest-700">16:30 ~ 17:30</td><td>금요일 주말 퇴소 집중 연속 배차</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB CONTENT: GWACHEON -->
+      <div id="content-gwacheon" class="space-y-8 hidden">
+        
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-stone-200">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="bg-stone-200 text-stone-800 text-xs font-bold px-2.5 py-0.5 rounded">과천 캠퍼스</span>
+                <span class="text-stone-400 text-xs">우편번호 13813</span>
+              </div>
+              <h3 class="text-2xl font-bold text-stone-900">경기도 과천시 교육원로 118</h3>
+              <p class="text-stone-500 text-sm mt-1">(구 지번: 과천시 막계동 산 27-1, 국가공무원인재개발원 분원)</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <button onclick="copyToClipboard('경기도 과천시 교육원로 118', '과천캠퍼스 주소가 클립보드에 복사되었습니다!')" class="bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="copy" class="w-4 h-4"></i> 주소 복사
+              </button>
+              <a href="https://map.kakao.com/link/search/국가공무원인재개발원 과천캠퍼스" target="_blank" class="bg-warmGold-400 hover:bg-warmGold-500 text-stone-900 text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="map" class="w-4 h-4"></i> 카카오맵 길찾기
+              </a>
+              <a href="https://map.naver.com/v5/search/국가공무원인재개발원 과천캠퍼스" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="navigation" class="w-4 h-4"></i> 네이버 지도 길찾기
+              </a>
+            </div>
+          </div>
+
+          <!-- Map and Transit Details -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
+            <div class="lg:col-span-7 h-[380px] rounded-2xl overflow-hidden border border-stone-200 relative shadow-inner">
+              <div id="map-gwacheon-container" class="w-full h-full"></div>
+              <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-700 shadow border border-stone-200 z-[400] flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-stone-700 animate-pulse"></span>
+                경기도 과천시 교육원로 118 (위도 37.4323, 경도 127.0055)
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+              <!-- Detail 1: Subway -->
+              <div class="bg-forest-50 p-4 rounded-2xl border border-forest-200">
+                <div class="flex items-center gap-2 text-forest-800 font-bold text-sm mb-1.5">
+                  <i data-lucide="train" class="w-4 h-4 text-forest-600"></i> 지하철 4호선 및 셔틀 이용 (필수 권장)
+                </div>
+                <p class="text-xs text-stone-700 leading-relaxed">
+                  <strong>4호선 정부과천청사역 6번 출구</strong> 전방 약 100m 지점(교육원삼거리 앞)에서 <strong>국가인재원 셔틀버스(무료) 탑승</strong> (약 5분 소요)
+                </p>
+                <div class="text-[11px] text-stone-600 mt-2 bg-white p-2 rounded-lg border border-forest-100">
+                  • 도보 이동 시 정부과천청사역에서 약 20~25분 완만한 오르막길 소요
+                </div>
+              </div>
+
+              <!-- Detail 2: Parking Restriction -->
+              <div class="bg-red-50 p-4 rounded-2xl border border-red-200">
+                <div class="flex items-center gap-2 text-red-700 font-bold text-sm mb-1.5">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600"></i> 일반 교육생 자가용 입차 불가
+                </div>
+                <p class="text-xs text-red-700 leading-relaxed">
+                  과천캠퍼스는 원내 주차 공간이 극히 협소하여 <strong>일반 교육생 자가용 입차를 전면 통제</strong>하고 있습니다. 반드시 대중교통 및 전철역 셔틀버스를 이용해 주십시오.
+                </p>
+                <div class="text-[11px] text-stone-600 mt-2">
+                  * 장애인, 임산부, 사전 승인자만 사전 등록 후 출입 허용
+                </div>
+              </div>
+
+              <!-- Detail 3: Phone -->
+              <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center justify-between text-xs">
+                <div>
+                  <div class="font-bold text-stone-800">과천 캠퍼스 교무과 / 상황실</div>
+                  <div class="text-stone-500">주간 02-503-8020 / 야간 02-500-8620</div>
+                </div>
+                <a href="tel:02-503-8020" class="bg-white px-3 py-1.5 rounded-lg border border-stone-300 font-bold text-forest-700 hover:bg-forest-50">
+                  전화걸기
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shuttle Bus Table Gwacheon -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-stone-100 text-stone-700 rounded-xl flex items-center justify-center">
+              <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-stone-900">과천 캠퍼스 셔틀버스(분원버스) 운행 시간표</h4>
+              <p class="text-xs text-stone-500">지하철 4호선 정부과천청사역 6번 출구 앞 ⇄ 과천캠퍼스 본관 로터리</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border border-stone-200 rounded-2xl p-5 bg-stone-50">
+              <div class="flex items-center justify-between font-bold text-sm text-stone-900 mb-3 pb-2 border-b border-stone-200">
+                <span class="flex items-center gap-1.5"><i data-lucide="sun" class="w-4 h-4 text-warmGold-500"></i> 아침 입교·출근 (정부과천청사역 → 캠퍼스)</span>
+                <span class="text-xs bg-stone-200 text-stone-800 px-2 py-0.5 rounded">등원</span>
+              </div>
+              <table class="w-full text-xs text-stone-700">
+                <thead>
+                  <tr class="text-stone-400 border-b border-stone-200">
+                    <th class="py-2 text-left font-semibold">회차</th>
+                    <th class="py-2 text-left font-semibold">청사역 출발 시각</th>
+                    <th class="py-2 text-left font-semibold">탑승 장소</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-200">
+                  <tr><td class="py-2 font-medium">1~3회차</td><td class="py-2 font-bold text-stone-800">07:15 / 07:30 / 07:45</td><td>6번 출구 전방 100m</td></tr>
+                  <tr><td class="py-2 font-medium">집중순환</td><td class="py-2 font-bold text-forest-700">08:00 ~ 08:55</td><td>약 5~10분 간격 수시 운행</td></tr>
+                  <tr><td class="py-2 font-medium">마지막차</td><td class="py-2 font-bold text-stone-800">09:10</td><td>정시 입교 권장</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="border border-stone-200 rounded-2xl p-5 bg-stone-50">
+              <div class="flex items-center justify-between font-bold text-sm text-stone-900 mb-3 pb-2 border-b border-stone-200">
+                <span class="flex items-center gap-1.5"><i data-lucide="moon" class="w-4 h-4 text-stone-600"></i> 오후 귀가·퇴근 (캠퍼스 → 청사역)</span>
+                <span class="text-xs bg-stone-200 text-stone-700 px-2 py-0.5 rounded">하원</span>
+              </div>
+              <table class="w-full text-xs text-stone-700">
+                <thead>
+                  <tr class="text-stone-400 border-b border-stone-200">
+                    <th class="py-2 text-left font-semibold">회차</th>
+                    <th class="py-2 text-left font-semibold">원내 출발 시각</th>
+                    <th class="py-2 text-left font-semibold">하차 장소</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-200">
+                  <tr><td class="py-2 font-medium">1회차</td><td class="py-2 font-bold text-stone-800">17:15</td><td>본관 앞 로터리 승강장</td></tr>
+                  <tr><td class="py-2 font-medium">집중순환</td><td class="py-2 font-bold text-forest-700">18:00 ~ 18:30</td><td>과정 종료 후 10분 단위 순환</td></tr>
+                  <tr><td class="py-2 font-medium">야간 연수</td><td class="py-2 font-bold text-stone-800">20:00 (특정 교육 시)</td><td>야간 프로그램 시 연장 운행</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section 5: Partner Network & Logos (협력업체 및 유관기관 로고 섹션) -->
+  <section id="partners" class="py-20 bg-white border-t border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-50 px-3 py-1 rounded-full border border-forest-200">Partners & Network</span>
+        <h2 class="text-3xl font-extrabold text-stone-900 mt-3 mb-4 tracking-tight">협력 기관 및 파트너 네트워크</h2>
+        <p class="text-stone-600 text-base">
+          국가공무원인재개발원은 정부부처, 주요 공공기관, 글로벌 IT 혁신기업, 국제기구와 긴밀한 협력을 통해 세계 최고 수준의 교육 콘텐츠를 제공합니다.
+        </p>
+      </div>
+
+      <!-- Partner Logos Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 items-center">
+        
+        <!-- Partner 1: 인사혁신처 -->
+        <div class="bg-stone-50 hover:bg-stone-100 p-5 rounded-2xl border border-stone-200 flex flex-col items-center justify-center text-center transition group h-32">
+          <svg class="w-10 h-10 mb-2 text-stone-700 group-hover:scale-105 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" stroke="#15803d" stroke-width="6"/>
+            <!-- Taegeuk style symbol -->
+            <path d="M50 20 C65 20, 75 35, 75 50 C75 65, 65 80, 50 80 C35 80, 25 65, 25 50 C25 35, 35 20, 50 20 Z" fill="#0369a1"/>
+            <path d="M50 20 C62 20, 70 32, 50 50 C30 68, 38 80, 50 80 C60 80, 70 70, 70 50 C70 30, 60 20, 50 20 Z" fill="#dc2626"/>
+            <circle cx="50" cy="50" r="10" fill="#ffffff"/>
+          </svg>
+          <span class="font-bold text-xs text-stone-800">인사혁신처</span>
+          <span class="text-[10px] text-stone-500">Ministry of Personnel</span>
+        </div>
+
+        <!-- Partner 2: 행정안전부 -->
+        <div class="bg-stone-50 hover:bg-stone-100 p-5 rounded-2xl border border-stone-200 flex flex-col items-center justify-center text-center transition group h-32">
+          <svg class="w-10 h-10 mb-2 text-stone-700 group-hover:scale-105 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="15" y="15" width="70" height="70" rx="14" fill="#0f766e"/>
+            <path d="M30 40 L50 25 L70 40 L70 72 L30 72 Z" fill="#ffffff"/>
+            <path d="M42 55 H58 V72 H42 Z" fill="#0f766e"/>
+          </svg>
+          <span class="font-bold text-xs text-stone-800">행정안전부</span>
+          <span class="text-[10px] text-stone-500">MOIS</span>
+        </div>
+
+        <!-- Partner 3: 나라배움터 -->
+        <div class="bg-stone-50 hover:bg-stone-100 p-5 rounded-2xl border border-stone-200 flex flex-col items-center justify-center text-center transition group h-32">
+          <svg class="w-10 h-10 mb-2 text-stone-700 group-hover:scale-105 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" fill="#f59e0b"/>
+            <path d="M30 55 L50 35 L70 55 L50 68 Z" fill="#ffffff"/>
+            <circle cx="50" cy="35" r="6" fill="#1e3a8a"/>
+          </svg>
+          <span class="font-bold text-xs text-stone-800">나라배움터</span>
+          <span class="text-[10px] text-stone-500">e-Learning Portal</span>
+        </div>
+
+        <!-- Partner 4: KDI 한국개발연구원 -->
+        <div class="bg-stone-50 hover:bg-stone-100 p-5 rounded-2xl border border-stone-200 flex flex-col items-center justify-center text-center transition group h-32">
+          <div class="w-10 h-10 mb-2 rounded-xl bg-blue-800 flex items-center justify-center text-white font-black text-sm tracking-tighter">
+            KDI
+          </div>
+          <span class="font-bold text-xs text-stone-800">한국개발연구원</span>
+          <span class="text-[10px] text-stone-500">KDI 정책연구</span>
+        </div>
+
+        <!-- Partner 5: 서울대학교 행정대학원 -->
+        <div class="bg-stone-50 hover:bg-stone-100 p-5 rounded-2xl border border-stone-200 flex flex-col items-center justify-center text-center transition group h-32">
+          <svg class="w-10 h-10 mb-2 group-hover:scale-105 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" fill="#1e3a8a"/>
+            <!-- Laurel wreath motif -->
+            <path d="M30 50 C30 35, 40 28, 50 28 C60 28, 70 35, 70 50 C70 65, 60 72, 50 72 C40 72, 30 65, 30 50 Z" stroke="#fbbf24" stroke-width="4" fill="none"/>
+            <text x="50" y="55" font-family="Pretendard, sans-serif" font-size="16" font-weight="900" fill="#ffffff" text-anchor="middle">SNU</text>
+          </svg>
+          <span class="font-bold text-xs text-stone-800">서울대 행정대학원</span>
+          <span class="text-[10px] text-stone-500">학술교류 협약</span>
+        </div>
+
+        <!-- Partner 6: 디지털플랫폼정부위원회 / AI 혁신파트너 -->
+        <div class="bg-stone-50 hover:bg-stone-100 p-5 rounded-2xl border border-stone-200 flex flex-col items-center justify-center text-center transition group h-32">
+          <svg class="w-10 h-10 mb-2 text-stone-700 group-hover:scale-105 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" fill="#065f46"/>
+            <!-- AI Spark Node -->
+            <circle cx="35" cy="40" r="6" fill="#34d399"/>
+            <circle cx="65" cy="40" r="6" fill="#34d399"/>
+            <circle cx="50" cy="65" r="7" fill="#fbbf24"/>
+            <line x1="35" y1="40" x2="50" y2="65" stroke="#ffffff" stroke-width="3"/>
+            <line x1="65" y1="40" x2="50" y2="65" stroke="#ffffff" stroke-width="3"/>
+            <line x1="35" y1="40" x2="65" y2="40" stroke="#ffffff" stroke-width="3"/>
+          </svg>
+          <span class="font-bold text-xs text-stone-800">디지털플랫폼정부</span>
+          <span class="text-[10px] text-stone-500">DPG 민관협력</span>
+        </div>
+
+      </div>
+
+      <!-- Additional Global & Corporate Training Partners Banner -->
+      <div class="mt-8 bg-stone-50 rounded-2xl p-6 border border-stone-200 flex flex-wrap items-center justify-between gap-4 text-xs text-stone-600">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-forest-800">글로벌 연수 협력기구:</span>
+          <span>OECD HRD Network, KOICA(한국국제협력단), 세계은행(World Bank) 글로벌 거버넌스 연수 파트너</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="bg-white px-3 py-1 rounded-lg border border-stone-200 font-medium">연간 60여 개 산·학·연 협업</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact-quick" class="bg-forest-950 text-stone-400 py-14 border-t border-forest-900 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10 pb-8 border-b border-forest-800">
+        
+        <div class="md:col-span-2 space-y-3">
+          <div class="flex items-center gap-2 text-white font-bold text-base">
+            <div class="w-8 h-8 bg-forest-600 text-warmGold-400 rounded-lg flex items-center justify-center text-xs font-black">
+              NHI
+            </div>
+            국가공무원인재개발원
+          </div>
+          <p class="text-stone-300 leading-relaxed max-w-md">
+            인사혁신처 소속 중앙공무원 교육기관으로서 헌법가치와 봉사정신을 확립하고, 급변하는 미래 행정환경에 능동적으로 대처하는 국가핵심인재를 육성합니다.
+          </p>
+        </div>
+
+        <div>
+          <h5 class="text-white font-bold mb-3">진천 본원 (충북)</h5>
+          <address class="not-italic space-y-1.5 text-stone-300">
+            <p>충청북도 진천군 덕산읍 교학로 30</p>
+            <p>대표전화: 043-931-6000</p>
+            <p>야간/휴일 상황실: 043-931-6062</p>
+            <p>팩스: 043-931-6019</p>
+          </address>
+        </div>
+
+        <div>
+          <h5 class="text-white font-bold mb-3">과천 캠퍼스 (경기)</h5>
+          <address class="not-italic space-y-1.5 text-stone-300">
+            <p>경기도 과천시 교육원로 118</p>
+            <p>대표전화: 02-503-8020</p>
+            <p>야간/휴일 상황실: 02-500-8620</p>
+            <p>지하철 4호선 정부과천청사역 6번 출구</p>
+          </address>
+        </div>
+
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between text-stone-500 gap-4">
+        <div>
+          &copy; 2026 National Human Resources Development Institute. All rights reserved.
+        </div>
+        <div class="flex gap-4">
+          <a href="https://www.nhi.go.kr" target="_blank" class="hover:text-stone-300 transition">공식 누리집 (nhi.go.kr)</a>
+          <a href="https://www.mpm.go.kr" target="_blank" class="hover:text-stone-300 transition">인사혁신처</a>
+          <a href="https://e-learning.nhi.go.kr" target="_blank" class="hover:text-stone-300 transition">나라배움터</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-stone-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 transform translate-y-24 opacity-0 transition-all duration-300 z-50 text-xs">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-message">주소가 복사되었습니다!</span>
+  </div>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Smooth Scroll
+    function scrollToSection(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    function toggleMobileMenu() {
+      mobileMenu.classList.toggle('hidden');
+    }
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+
+    // Toast Function
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      text.innerText = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3000);
+    }
+
+    // Copy to Clipboard
+    function copyToClipboard(text, successMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg);
+      }).catch(err => {
+        showToast('복사에 실패했습니다.');
+      });
+    }
+
+    // Leaflet Maps Setup
+    let jincheonMap = null;
+    let gwacheonMap = null;
+
+    function initJincheonMap() {
+      if (jincheonMap) return;
+      jincheonMap = L.map('map-jincheon-container').setView([36.9142, 127.5258], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(jincheonMap);
+
+      const marker = L.marker([36.9142, 127.5258]).addTo(jincheonMap);
+      marker.bindPopup("<b>국가공무원인재개발원 진천본원</b><br>충북 진천군 덕산읍 교학로 30").openPopup();
+    }
+
+    function initGwacheonMap() {
+      if (gwacheonMap) return;
+      gwacheonMap = L.map('map-gwacheon-container').setView([37.4323, 127.0055], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(gwacheonMap);
+
+      const marker = L.marker([37.4323, 127.0055]).addTo(gwacheonMap);
+      marker.bindPopup("<b>국가공무원인재개발원 과천캠퍼스</b><br>경기 과천시 교육원로 118").openPopup();
+    }
+
+    // Tab Switcher
+    function selectTab(campus) {
+      const btnJincheon = document.getElementById('tab-jincheon');
+      const btnGwacheon = document.getElementById('tab-gwacheon');
+      const contentJincheon = document.getElementById('content-jincheon');
+      const contentGwacheon = document.getElementById('content-gwacheon');
+
+      if (campus === 'jincheon') {
+        btnJincheon.className = 'flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 bg-forest-600 text-white shadow-sm';
+        btnGwacheon.className = 'flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-stone-600 hover:text-stone-900 transition-all duration-200';
+        contentJincheon.classList.remove('hidden');
+        contentGwacheon.classList.add('hidden');
+        setTimeout(() => {
+          if (jincheonMap) jincheonMap.invalidateSize();
+        }, 100);
+      } else {
+        btnGwacheon.className = 'flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 bg-stone-800 text-white shadow-sm';
+        btnJincheon.className = 'flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-stone-600 hover:text-stone-900 transition-all duration-200';
+        contentGwacheon.classList.remove('hidden');
+        contentJincheon.classList.add('hidden');
+        initGwacheonMap();
+        setTimeout(() => {
+          if (gwacheonMap) gwacheonMap.invalidateSize();
+        }, 100);
+      }
+    }
+
+    // Init on DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', () => {
+      initJincheonMap();
+    });
+  </script>
+</body>
+</html>
